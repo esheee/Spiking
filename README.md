@@ -190,11 +190,10 @@ class SpikingNeuronLayerRNN(nn.Module):
         self.prev_inner = inner_excitation
         self.prev_outer = outer_excitation
         return delayed_return_state, delayed_return_output//stimulates a firing delay
-CONTINUE CHANGES HEREEEEE
 class InputDataToSpikingPerceptronLayer(nn.Module):
 
     def __init__(self, device):
-        super(InputDataToSpikingPerceptronLayer, self).__init__()
+        super(InputDataToSpikingPerceptronLayer, self).__init__()//inputs the training data
         self.device = device
 
         self.reset_state()
@@ -236,18 +235,18 @@ class SpikingNet(nn.Module):
         assert (0 <= begin_eval and begin_eval < n_time_steps)
         self.device = device
         self.n_time_steps = n_time_steps
-        self.begin_eval = begin_eval
+        self.begin_eval = begin_eval//starting evaluation
 
         self.input_conversion = InputDataToSpikingPerceptronLayer(device)
 
         self.layer1 = SpikingNeuronLayerRNN(
             device, n_inputs=28*28, n_hidden=100,
-            decay_multiplier=0.9, threshold=1.0, penalty_threshold=1.5
+            decay_multiplier=0.9, threshold=1.0, penalty_threshold=1.5//acts as a way to slow the inner activation in order for an accumulate stimulis for shorter periods for resetting, affecting the gradients backprpagating. The value 0.9 infers that the inner activiation is multiplied by 0.9 through time and it decays and neurons unexcite before firintg. Biological implications: learning can happen according to the weighting of the decay. In computing this is implementing ideas of He
         )
 
         self.layer2 = SpikingNeuronLayerRNN(
             device, n_inputs=100, n_hidden=10,
-            decay_multiplier=0.9, threshold=1.0, penalty_threshold=1.5
+            decay_multiplier=0.9, threshold=1.0, penalty_threshold=1.5//the 0.9 multiplier similarly suggests that the inner activiation is multiplied by 0.9 through time and it decays and neurons unexcite before firintg. Biological implications: learning can happen according to the weighting of the decay. 
         )
 
         self.output_conversion = OutputDataToSpikingPerceptronLayer(average_output=False)  # Sum on outputs.
@@ -337,8 +336,9 @@ class SpikingNet(nn.Module):
         plt.xlabel("Time")
         plt.ylabel("Neurons of layer")
         plt.show()
+        
 
-    def plot_neuron(self, neuron_through_time, title):
+    def plot_neuron(self, neuron_through_time, title)://method for time axis component of spiking neural network where the neuron empties itself and takes refractory period until it fires again
         width = max(16, len(neuron_through_time) / 8)
         height = 4
         plt.figure(figsize=(width, height))
@@ -371,7 +371,7 @@ Let's use our `SpikingNet`!
 spiking_model = SpikingNet(device, n_time_steps=128, begin_eval=0)
 train_many_epochs(spiking_model)
 ```
-
+//essentially just inputting the training data
     Train Epoch: 1 [0/60000 (0%)] Loss: 2.460052 Accuracy: 9.90%
     Train Epoch: 1 [10000/60000 (17%)] Loss: 1.811235 Accuracy: 30.00%
     Train Epoch: 1 [20000/60000 (33%)] Loss: 1.797833 Accuracy: 38.60%
@@ -398,45 +398,6 @@ train_many_epochs(spiking_model)
     Train Epoch: 3 [50000/60000 (83%)] Loss: 0.310708 Accuracy: 90.70%
 
     Test set: Average loss: 0.0003, Accuracy: 9065/10000 (90.65%)
-
-
-
-## Training a Feedforward Neural Network (for comparison)
-
-It has the same number of layers and neurons, and also uses ReLU activation, but it's not an SNN, this one is a regular one as defined in the code above with this other class `NonSpikingNet`.
-
-
-```python
-non_spiking_model = NonSpikingNet().to(device)
-train_many_epochs(non_spiking_model)
-```
-
-    Train Epoch: 1 [0/60000 (0%)] Loss: 2.300953 Accuracy: 9.50%
-    Train Epoch: 1 [10000/60000 (17%)] Loss: 1.908515 Accuracy: 62.40%
-    Train Epoch: 1 [20000/60000 (33%)] Loss: 1.259780 Accuracy: 72.20%
-    Train Epoch: 1 [30000/60000 (50%)] Loss: 0.861031 Accuracy: 83.00%
-    Train Epoch: 1 [40000/60000 (67%)] Loss: 0.652988 Accuracy: 85.40%
-    Train Epoch: 1 [50000/60000 (83%)] Loss: 0.609710 Accuracy: 84.40%
-
-    Test set: Average loss: 0.0005, Accuracy: 8691/10000 (86.91%)
-
-    Train Epoch: 2 [0/60000 (0%)] Loss: 0.469882 Accuracy: 88.30%
-    Train Epoch: 2 [10000/60000 (17%)] Loss: 0.479579 Accuracy: 85.80%
-    Train Epoch: 2 [20000/60000 (33%)] Loss: 0.466115 Accuracy: 88.20%
-    Train Epoch: 2 [30000/60000 (50%)] Loss: 0.479764 Accuracy: 87.10%
-    Train Epoch: 2 [40000/60000 (67%)] Loss: 0.472486 Accuracy: 85.50%
-    Train Epoch: 2 [50000/60000 (83%)] Loss: 0.443070 Accuracy: 88.20%
-
-    Test set: Average loss: 0.0004, Accuracy: 8880/10000 (88.80%)
-
-    Train Epoch: 3 [0/60000 (0%)] Loss: 0.432652 Accuracy: 88.20%
-    Train Epoch: 3 [10000/60000 (17%)] Loss: 0.472320 Accuracy: 86.80%
-    Train Epoch: 3 [20000/60000 (33%)] Loss: 0.443402 Accuracy: 88.60%
-    Train Epoch: 3 [30000/60000 (50%)] Loss: 0.401267 Accuracy: 90.00%
-    Train Epoch: 3 [40000/60000 (67%)] Loss: 0.428927 Accuracy: 88.40%
-    Train Epoch: 3 [50000/60000 (83%)] Loss: 0.383301 Accuracy: 90.10%
-
-    Test set: Average loss: 0.0004, Accuracy: 8897/10000 (88.97%)
 
 
 
